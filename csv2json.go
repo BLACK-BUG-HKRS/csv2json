@@ -233,5 +233,27 @@ func getJSONFunc(pretty bool) (func(map[string]string) string, string) {
 
 // main function
 func main() {
-	// fileData, err := getFileData()
+	// Showing useful information when the user enters the --help option
+	flag.Usage = func() {
+		fmt.Printf("Usage: %s [options] <csvFile>\nOptions:\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+	// Getting the file data that was entered by the user
+	fileData, err := getFileData()
+
+	if err != nil {
+		exitGracefully(err)
+	}
+	// Validating the file entered
+	if _, err := checkIfValidFile(fileData.filepath); err != nil {
+		exitGracefully(err)
+	}
+	// Declaring the channels that our go-routines are going to use
+	writerChannel := make(chan map[string]string)
+	done := make(chan bool) 
+	// Running both of our go-routines, the first one responsible for reading and the second one for writing
+	go processCsvFile(fileData, writerChannel) 
+	go writeJSONFile(fileData.filepath, writerChannel, done, fileData.pretty)
+	// Waiting for the done channel to receive a value, so that we can terminate the programn execution
+	<-done 
 }
