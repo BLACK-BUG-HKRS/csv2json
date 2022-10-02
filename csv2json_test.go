@@ -3,9 +3,7 @@ package main
 // all imports required for the test
 import (
 	"flag"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -14,10 +12,10 @@ func Test_getFileData(t *testing.T) {
 
 	// defining test slice
 	tests := []struct {
-		name	string // nam of the test
-		want 	inputFile // the input instance to return
-		wantErr	bool // whether or not want an error
-		osArgs	[]string // command arguments for the test
+		name    string    // nam of the test
+		want    inputFile // the input instance to return
+		wantErr bool      // whether or not want an error
+		osArgs  []string  // command arguments for the test
 	}{
 
 		// declaring each unit test input and output data
@@ -31,18 +29,18 @@ func Test_getFileData(t *testing.T) {
 
 	// iterating over the slice
 	for _, tt := range tests {
-		
-		t.Run(tt.name, func(t *testing.T)) {
+
+		t.Run(tt.name, func(t *testing.T) {
 			// saving original os.Args reference
 			actualOsArgs := os.Args
 
 			// defer function to run after the test is done
 			defer func() {
-				os.Args = actualOsArgs // Restoring the original os.Args
-				flag.commandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) // resetting the flag command line to parse the flag again
+				os.Args = actualOsArgs                                           // Restoring the original os.Args
+				flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) // resetting the flag command line to parse the flag again
 			}()
 
-			os.Args = tt.osArgs // setting specific command args for this test
+			os.Args = tt.osArgs       // setting specific command args for this test
 			got, err := getFileData() // running the function we want to test
 
 			if (err != nil) != tt.wantErr { // asserting whether or not the correct value id given
@@ -54,6 +52,6 @@ func Test_getFileData(t *testing.T) {
 				t.Errorf("getFileData() = %v, want %v", got, tt.want)
 			}
 
-		}
+		})
 	}
 }
