@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type inputFile struct {
@@ -154,8 +155,6 @@ func processLine(headers []string, dataList []string) (map[string]string, error)
 
 
 
-
-
 func writeJSONFile(csvPath string, writerChannel <-chan map[string]string, done chan<- bool, pretty bool) {
 	writeString := createStringWriter(csvPath) // Instanciating a JSON writer function
 	jsonFunc, breakLine := getJSONFunc(pretty) // Instanciating the JSON parse function and the breakline character
@@ -186,6 +185,24 @@ func writeJSONFile(csvPath string, writerChannel <-chan map[string]string, done 
 }
 
 
+
+func createStringWriter(csvPath string) func(string, bool) {
+	jsonDir := filepath.Dir(csvPath) // Getting the directory where the CSV file is
+	jsonName := fmt.Sprintf("%s.json", strings.TrimSuffix(filepath.Base(csvPath), ".csv")) // Declaring the JSON filename, using the CSV file name as base
+	finalLocation := filepath.Join(jsonDir, jsonName) // Declaring the JSON file location, using the previous variables as base
+	// Opening the JSON file that we want to start writing
+	f, err := os.Create(finalLocation) 
+	check(err)
+	// This is the function we want to return, we're going to use it to write the JSON file
+	return func(data string, close bool) { // 2 arguments: The piece of text we want to write, and whether or not we should close the file
+		_, err := f.WriteString(data) // Writing the data string into the file
+		check(err)
+		// If close is "true", it means there are no more data left to be written, so we close the file
+		if close { 
+			f.Close()
+		}
+	}
+}
 
 
 
