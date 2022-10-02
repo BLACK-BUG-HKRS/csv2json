@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -202,6 +203,28 @@ func createStringWriter(csvPath string) func(string, bool) {
 			f.Close()
 		}
 	}
+}
+
+
+func getJSONFunc(pretty bool) (func(map[string]string) string, string) {
+	// Declaring the variables we're going to return at the end
+	var jsonFunc func(map[string]string) string
+	var breakLine string
+	if pretty { //Pretty is enabled, so we should return a well-formatted JSON file (multi-line)
+		breakLine = "\n"
+		jsonFunc = func(record map[string]string) string {
+			jsonData, _ := json.MarshalIndent(record, "   ", "   ") // By doing this we're ensuring the JSON generated is indented and multi-line
+			return "   " + string(jsonData) // Transforming from binary data to string and adding the indent characets to the front
+		}
+	} else { // Now pretty is disabled so we should return a compact JSON file (one single line)
+		breakLine = "" // It's an empty string because we never break lines when adding a new JSON object
+		jsonFunc = func(record map[string]string) string {
+			jsonData, _ := json.Marshal(record) // Now we're using the standard Marshal function, which generates JSON without formating
+			return string(jsonData) // Transforming from binary data to string
+		}
+	}
+
+	return jsonFunc, breakLine // Returning everythinbg
 }
 
 
