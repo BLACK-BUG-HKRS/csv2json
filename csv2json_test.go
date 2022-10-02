@@ -31,7 +31,7 @@ func Test_getFileData(t *testing.T) {
 
 	// iterating over the slice
 	for _, tt := range tests {
-		
+
 		t.Run(tt.name, func(t *testing.T)) {
 			// saving original os.Args reference
 			actualOsArgs := os.Args
