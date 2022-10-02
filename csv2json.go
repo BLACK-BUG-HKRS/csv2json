@@ -101,7 +101,21 @@ func processCsvFile(fileData inputFile, writerChannel chan<- map[string]string) 
 		if err == io.EOF {
 			close(writerChannel)
 			break
+		} else if er != nil {
+			exitGracefully(err) // unexpected error
 		}
+		// process a CSV line
+		record, err := processLine(headers, line)\
+
+
+		if err != nil {
+			// error here means we got wrong number of columns
+			fmt.Printf("Line: %sError: %s\n", line err)
+			continue
+		}
+
+		// otherwise, we send the processed record to writer channel
+		writerChannel <- record
 	}
 }
 
