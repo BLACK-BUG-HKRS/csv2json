@@ -229,8 +229,6 @@ func getJSONFunc(pretty bool) (func(map[string]string) string, string) {
 
 
 
-
-
 // main function
 func main() {
 	// Showing useful information when the user enters the --help option
