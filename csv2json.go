@@ -61,6 +61,27 @@ func checkIfValidFile(filename string) (bool, error) {
 }
 
 
+
+
+
+func processScvFile(fileData inputFile, writerChannel chan<- map[string]string) {
+
+	// open file for reading
+	file, err := os.Open(fileData.filepath)
+
+	//check for errors
+	check(err)
+
+	// close the file 
+	defer file.Close()
+
+	// defining a "header" and "line" slice
+	
+}
+
+
+
+
 // main function
 func main() {
 	// fileData, err := getFileData()
