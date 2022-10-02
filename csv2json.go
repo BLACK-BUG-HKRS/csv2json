@@ -1,5 +1,11 @@
 package main
 
+import (
+	"errors"
+	"flag"
+	"os"
+)
+
 type inputFile struct {
 	filepath  string // path to csv file
 	separator string // the separator used in the file
@@ -21,10 +27,9 @@ func getFileData() (inputFile, error) {
 
 	fileLocation := flag.Arg(0) // The only argument (that is not a flag option) is the file location (CSV file)
 
-
 	// validating whether on not the "comma" or "semicolon" is received
 	// if not return error
-	if !(*separator == "comma" || #separator == "semicolon") {
+	if !(*separator == "comma" || *separator == "semicolon") {
 		return inputFile{}, errors.New("Only comma or semicolon separators are allowed!")
 	}
 
@@ -33,7 +38,6 @@ func getFileData() (inputFile, error) {
 	return inputFile{fileLocation, *separator, *pretty}, nil
 }
 
-
 func main() {
-	fileData, err := getFileData()
+	// fileData, err := getFileData()
 }
