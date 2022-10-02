@@ -44,6 +44,12 @@ func checkIfValidFile(filename string) (bool, error) {
 	if fileExtension := filepath.Ext(filename); fileExtension != ".csv" {
 		return false, fmt.Errorf("File %s is not CSV", filename)
 	}
+
+	// checking if file path entered belongs to existing file
+	if _, err :=os.Stat(filename); err != nil && os.IsNotExist(err) {
+		return false, fmt.Errof("file %s does not exist", filename)
+	}
+	
 	return true, nil
 }
 
