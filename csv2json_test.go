@@ -1,58 +1,28 @@
 package main
 
 import (
-	"flag"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"reflect"
 	"testing"
 )
 
 func Test_getFileData(t *testing.T) {
-
-	// defining test slice
 	tests := []struct {
-		name    string    // nam of the test
-		want    inputFile // the input instance to return
-		wantErr bool      // whether or not want an error
-		osArgs  []string  // command arguments for the test
+		name    string
+		want    inputFile
+		wantErr bool
 	}{
-
-		// declaring each unit test input and output data
-		{"Default parameters", inputFile{"test.csv", "comma", false}, false, []string{"cmd", "test.csv"}},
-		{"No parameters", inputFile{}, true, []string{"cmd"}},
-		{"semicolon enabled", inputFile{"test.csv", "semicolon", false}, false, []string{"cmd", "--separator=semicolon", "test.csv"}},
-		{"Pretty enabled", inputFile{"test.csv", "comma", true}, false, []string{"cmd", "--pretty", "test.csv"}},
-		{"Pretty and semicolon enabled", inputFile{"test.csv", "semicolon", true}, false, []string{"cmd", "--pretty", "--separator=semicolon", "test.csv"}},
-		{"Separator not identified", inputFile{}, true, []string{"cmd", "--separator=pipe", "test.csv"}},
+		// TODO: Add test cases.
 	}
-
-	// iterating over the slice
 	for _, tt := range tests {
-
 		t.Run(tt.name, func(t *testing.T) {
-			// saving original os.Args reference
-			actualOsArgs := os.Args
-
-			// defer function to run after the test is done
-			defer func() {
-				os.Args = actualOsArgs                                           // Restoring the original os.Args
-				flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) // resetting the flag command line to parse the flag again
-			}()
-
-			os.Args = tt.osArgs       // setting specific command args for this test
-			got, err := getFileData() // running the function we want to test
-
-			if (err != nil) != tt.wantErr { // asserting whether or not the correct value id given
+			got, err := getFileData()
+			if (err != nil) != tt.wantErr {
 				t.Errorf("getFileData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
-			if !reflect.DeepEqual(got, tt.want) { // asserting whether the correct value wanted is given
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getFileData() = %v, want %v", got, tt.want)
 			}
-
 		})
 	}
 }
@@ -83,102 +53,49 @@ func Test_checkIfValidFile(t *testing.T) {
 	}
 }
 
-func Test_processCsvFile(t *testing.T) {
-	// Defining the maps we're expecting to get from our function
-	wantMapSlice := []map[string]string{
-		{"COL1": "1", "COL2": "2", "COL3": "3"},
-		{"COL1": "4", "COL2": "5", "COL3": "6"},
+func Test_processLine(t *testing.T) {
+	type args struct {
+		headers  []string
+		dataList []string
 	}
-	// Defining our test cases
 	tests := []struct {
-		name      string // The name of the test
-		csvString string // The content of our tested CSV file
-		separator string // The separator used for each test case
+		name    string
+		args    args
+		want    map[string]string
+		wantErr bool
 	}{
-		{"Comma separator", "COL1,COL2,COL3\n1,2,3\n4,5,6\n", "comma"},
-		{"Semicolon separator", "COL1;COL2;COL3\n1;2;3\n4;5;6\n", "semicolon"},
+		// TODO: Add test cases.
 	}
-	// Iterating our test cases as usual
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Creating a CSV temp file for testing
-			tmpfile, err := ioutil.TempFile("", "test*.csv")
-			check(err)
-
-			defer os.Remove(tmpfile.Name())            // Removing the CSV test file before living
-			_, err = tmpfile.WriteString(tt.csvString) // Writing the content of the CSV test file
-			tmpfile.Sync()                             // Persisting data on disk
-			// Defining the inputFile struct that we're going to use as one parameter of our function
-			testFileData := inputFile{
-				filepath:  tmpfile.Name(),
-				pretty:    false,
-				separator: tt.separator,
+			got, err := processLine(tt.args.headers, tt.args.dataList)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("processLine() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			// Defining the writerChanel
-			writerChannel := make(chan map[string]string)
-			// Calling the targeted function as a go routine
-			go processCsvFile(testFileData, writerChannel)
-			// Iterating over the slice containing the expected map values
-			for _, wantMap := range wantMapSlice {
-				record := <-writerChannel                // Waiting for the record that we want to compare
-				if !reflect.DeepEqual(record, wantMap) { // Making the corresponding test assertion
-					t.Errorf("processCsvFile() = %v, want %v", record, wantMap)
-				}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("processLine() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-
 func Test_writeJSONFile(t *testing.T) {
-	// Defining the data maps we want to convert into JSON
-	dataMap := []map[string]string{
-		{"COL1": "1", "COL2": "2", "COL3": "3"},
-		{"COL1": "4", "COL2": "5", "COL3": "6"},
+	type args struct {
+		csvPath       string
+		writerChannel <-chan map[string]string
+		done          chan<- bool
+		pretty        bool
 	}
-	// Defining our test cases
 	tests := []struct {
-		csvPath  string // The "fake" csv path.
-		jsonPath string // The existing JSON file with the expected data
-		pretty   bool // Whether the output is formatted or not
-		name     string // The name of the test
+		name string
+		args args
 	}{
-		{"compact.csv", "compact.json", false, "Compact JSON"}, 
-		{"pretty.csv", "pretty.json", true, "Pretty JSON"},
+		// TODO: Add test cases.
 	}
-	// Iterating over our test cases
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Creating our mocked channels
-			writerChannel := make(chan map[string]string)
-			done := make(chan bool)
-			// Running a go-routine
-			go func() {
-				// Pushing the dataMap elements into our mocked writerChannel
-				for _, record := range dataMap {
-					writerChannel <- record
-				}
-				close(writerChannel)
-			}()
-			// Running our targeted function
-			go writeJSONFile(tt.csvPath, writerChannel, done, tt.pretty)
-			// Waiting for the past function to end
-			<-done
-			// Getting the text from the JSON file created by the previous function
-			testOutput, err := ioutil.ReadFile(tt.jsonPath)
-			
-			if err != nil { // Failing test if something went wrong with our JSON file creation
-				t.Errorf("writeJSONFile(), Output file got error: %v", err)
-			}
-			// Cleaning up after everything is done
-			defer os.Remove(tt.jsonPath)
-			// Getting the text from the JSON file with the expected data
-			wantOutput, err := ioutil.ReadFile(filepath.Join("testJsonFiles", tt.jsonPath))
-			check(err) // This should never happen
-			// Making the assertion between our generated JSON file content and the expected JSON file content 
-			if (string(testOutput)) != (string(wantOutput)) {
-				t.Errorf("writeJSONFile() = %v, want %v", string(testOutput), string(wantOutput))
-			}
+			writeJSONFile(tt.args.csvPath, tt.args.writerChannel, tt.args.done, tt.args.pretty)
 		})
 	}
 }

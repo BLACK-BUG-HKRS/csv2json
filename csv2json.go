@@ -214,17 +214,17 @@ func getJSONFunc(pretty bool) (func(map[string]string) string, string) {
 		breakLine = "\n"
 		jsonFunc = func(record map[string]string) string {
 			jsonData, _ := json.MarshalIndent(record, "   ", "   ") // By doing this we're ensuring the JSON generated is indented and multi-line
-			return "   " + string(jsonData) // Transforming from binary data to string and adding the indent characets to the front
+			return "   " + string(jsonData) // Transforming from binary data to string and adding the indent characters to the front
 		}
 	} else { // Now pretty is disabled so we should return a compact JSON file (one single line)
 		breakLine = "" // It's an empty string because we never break lines when adding a new JSON object
 		jsonFunc = func(record map[string]string) string {
-			jsonData, _ := json.Marshal(record) // Now we're using the standard Marshal function, which generates JSON without formating
+			jsonData, _ := json.Marshal(record) // Now we're using the standard Marshal function, which generates JSON without formatting
 			return string(jsonData) // Transforming from binary data to string
 		}
 	}
 
-	return jsonFunc, breakLine // Returning everythinbg
+	return jsonFunc, breakLine // Returning everything
 }
 
 
