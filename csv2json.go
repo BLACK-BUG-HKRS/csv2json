@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"os"
+	"fmt"
 )
 
 type inputFile struct {
@@ -36,6 +37,14 @@ func getFileData() (inputFile, error) {
 	// at this point the arguments are validated
 	// return the corresponding struct instance with all required data
 	return inputFile{fileLocation, *separator, *pretty}, nil
+}
+
+func checkIfValidFile(filename string) (bool, error) {
+	// Checking if the entered file is a csv
+	if fileExtension := filepath.Ext(filename); fileExtension != ".csv" {
+		return false, fmt.Errorf("File %s is not CSV", filename)
+	}
+	return true, nil
 }
 
 func main() {
