@@ -135,18 +135,58 @@ func check(e error)  {
 
 
 
-
 func processLine(headers []string, dataList []string) (map[string]string, error)  {
 	// check if same number of headers and columns
 	if len(dataList) != len(headers) {
-		return nil, errors.New("Line doesn't match headers format. Skipping")
+		return nil, errors.New("line doesn't match headers format. Skipping")
 	}
 	// creating the map to populate
 	recordMap := make(map[string]string)
 	
 	// set new map key for each header
-	for i 
+	for i, name := range headers {
+		recordMap[name] = dataList[i]
+	}
+
+	// returning generated map
+	return recordMap, nil
 }
+
+
+
+
+
+func writeJSONFile(csvPath string, writerChannel <-chan map[string]string, done chan<- bool, pretty bool) {
+	writeString := createStringWriter(csvPath) // Instanciating a JSON writer function
+	jsonFunc, breakLine := getJSONFunc(pretty) // Instanciating the JSON parse function and the breakline character
+	 // Log for informing
+	fmt.Println("Writing JSON file...")
+	// Writing the first character of our JSON file. We always start with a "[" since we always generate array of record
+	writeString("["+breakLine, false) 
+	first := true
+	for {
+		// Waiting for pushed records into our writerChannel
+		record, more := <-writerChannel
+		if more {
+			if !first { // If it's not the first record, we break the line
+				writeString(","+breakLine, false)
+			} else {
+				first = false // If it's the first one, we don't break the line
+			}
+
+			jsonData := jsonFunc(record) // Parsing the record into JSON
+			writeString(jsonData, false) // Writing the JSON string with our writer function
+		} else { // If we get here, it means there aren't more record to parse. So we need to close the file
+			writeString(breakLine+"]", true) // Writing the final character and closing the file
+			fmt.Println("Completed!") // Logging that we're done
+			done <- true // Sending the signal to the main function so it can correctly exit out.
+			break // Stoping the for-loop
+		}
+	}
+}
+
+
+
 
 
 
