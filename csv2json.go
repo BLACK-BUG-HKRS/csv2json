@@ -85,7 +85,7 @@ func processCsvFile(fileData inputFile, writerChannel chan<- map[string]string) 
 
 	// change default separator from "," to ";"
 	if fileData.separator == "semicolon" {
-		read.comma = ';'
+		reader.Comma = ';'
 	}
 
 	// reading the first line
@@ -101,22 +101,51 @@ func processCsvFile(fileData inputFile, writerChannel chan<- map[string]string) 
 		if err == io.EOF {
 			close(writerChannel)
 			break
-		} else if er != nil {
+		} else if err != nil {
 			exitGracefully(err) // unexpected error
 		}
 		// process a CSV line
-		record, err := processLine(headers, line)\
+		record, err := processLine(headers, line)
 
 
 		if err != nil {
 			// error here means we got wrong number of columns
-			fmt.Printf("Line: %sError: %s\n", line err)
+			fmt.Printf("Line: %sError: %s\n", line, err)
 			continue
 		}
 
 		// otherwise, we send the processed record to writer channel
 		writerChannel <- record
 	}
+}
+
+
+func exitGracefully(err error)  {
+	fmt.Fprint(os.Stderr, "error: %v\n", err)
+	os.Exit(1)	
+}
+
+
+func check(e error)  {
+	if e != nil {
+		exitGracefully(e)
+	}
+	
+}
+
+
+
+
+func processLine(headers []string, dataList []string) (map[string]string, error)  {
+	// check if same number of headers and columns
+	if len(dataList) != len(headers) {
+		return nil, errors.New("Line doesn't match headers format. Skipping")
+	}
+	// creating the map to populate
+	recordMap := make(map[string]string)
+	
+	// set new map key for each header
+	for i 
 }
 
 
