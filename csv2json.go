@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/csv"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -64,7 +66,7 @@ func checkIfValidFile(filename string) (bool, error) {
 
 
 
-func processScvFile(fileData inputFile, writerChannel chan<- map[string]string) {
+func processCsvFile(fileData inputFile, writerChannel chan<- map[string]string) {
 
 	// open file for reading
 	file, err := os.Open(fileData.filepath)
@@ -76,7 +78,31 @@ func processScvFile(fileData inputFile, writerChannel chan<- map[string]string) 
 	defer file.Close()
 
 	// defining a "header" and "line" slice
-	
+	var headers, line []string
+
+	// initialize CSV reader
+	reader := csv.NewReader(file)
+
+	// change default separator from "," to ";"
+	if fileData.separator == "semicolon" {
+		read.comma = ';'
+	}
+
+	// reading the first line
+	headers, err = reader.Read()
+	check(err) // check error again
+
+	// iterate over each line in CSV
+	for {
+		
+		line, err = reader.Read()
+
+		// if reached the end of the file
+		if err == io.EOF {
+			close(writerChannel)
+			break
+		}
+	}
 }
 
 
