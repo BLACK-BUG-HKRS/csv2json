@@ -4,6 +4,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -103,10 +104,10 @@ func Test_processCsvFile(t *testing.T) {
 			// Creating a CSV temp file for testing
 			tmpfile, err := ioutil.TempFile("", "test*.csv")
 			check(err)
-			
-			defer os.Remove(tmpfile.Name()) // Removing the CSV test file before living
+
+			defer os.Remove(tmpfile.Name())            // Removing the CSV test file before living
 			_, err = tmpfile.WriteString(tt.csvString) // Writing the content of the CSV test file
-			tmpfile.Sync() // Persisting data on disk
+			tmpfile.Sync()                             // Persisting data on disk
 			// Defining the inputFile struct that we're going to use as one parameter of our function
 			testFileData := inputFile{
 				filepath:  tmpfile.Name(),
@@ -119,10 +120,64 @@ func Test_processCsvFile(t *testing.T) {
 			go processCsvFile(testFileData, writerChannel)
 			// Iterating over the slice containing the expected map values
 			for _, wantMap := range wantMapSlice {
-				record := <-writerChannel // Waiting for the record that we want to compare
+				record := <-writerChannel                // Waiting for the record that we want to compare
 				if !reflect.DeepEqual(record, wantMap) { // Making the corresponding test assertion
 					t.Errorf("processCsvFile() = %v, want %v", record, wantMap)
 				}
+			}
+		})
+	}
+}
+
+
+func Test_writeJSONFile(t *testing.T) {
+	// Defining the data maps we want to convert into JSON
+	dataMap := []map[string]string{
+		{"COL1": "1", "COL2": "2", "COL3": "3"},
+		{"COL1": "4", "COL2": "5", "COL3": "6"},
+	}
+	// Defining our test cases
+	tests := []struct {
+		csvPath  string // The "fake" csv path.
+		jsonPath string // The existing JSON file with the expected data
+		pretty   bool // Whether the output is formatted or not
+		name     string // The name of the test
+	}{
+		{"compact.csv", "compact.json", false, "Compact JSON"}, 
+		{"pretty.csv", "pretty.json", true, "Pretty JSON"},
+	}
+	// Iterating over our test cases
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Creating our mocked channels
+			writerChannel := make(chan map[string]string)
+			done := make(chan bool)
+			// Running a go-routine
+			go func() {
+				// Pushing the dataMap elements into our mocked writerChannel
+				for _, record := range dataMap {
+					writerChannel <- record
+				}
+				close(writerChannel)
+			}()
+			// Running our targeted function
+			go writeJSONFile(tt.csvPath, writerChannel, done, tt.pretty)
+			// Waiting for the past function to end
+			<-done
+			// Getting the text from the JSON file created by the previous function
+			testOutput, err := ioutil.ReadFile(tt.jsonPath)
+			
+			if err != nil { // Failing test if something went wrong with our JSON file creation
+				t.Errorf("writeJSONFile(), Output file got error: %v", err)
+			}
+			// Cleaning up after everything is done
+			defer os.Remove(tt.jsonPath)
+			// Getting the text from the JSON file with the expected data
+			wantOutput, err := ioutil.ReadFile(filepath.Join("testJsonFiles", tt.jsonPath))
+			check(err) // This should never happen
+			// Making the assertion between our generated JSON file content and the expected JSON file content 
+			if (string(testOutput)) != (string(wantOutput)) {
+				t.Errorf("writeJSONFile() = %v, want %v", string(testOutput), string(wantOutput))
 			}
 		})
 	}
