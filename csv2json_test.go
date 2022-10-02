@@ -33,6 +33,15 @@ func Test_getFileData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T)) {
 			// saving original os.Args reference
+			actualOsArgs := os.Args
+
+			// defer function to run after the test is done
+			defer func() {
+				os.Args = actualOsArgs // Restoring the original os.Args
+				flag.commandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) // resetting the flag command line to parse the flag again
+			}()
+
+			os.Args = tt.osArgs // setting specific command args for this test
 		}
 	}
 }
