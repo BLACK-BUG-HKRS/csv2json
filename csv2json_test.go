@@ -31,6 +31,7 @@ func Test_getFileData(t *testing.T) {
 
 	// iterating over the slice
 	for _, tt := range tests {
+		
 		t.Run(tt.name, func(t *testing.T)) {
 			// saving original os.Args reference
 			actualOsArgs := os.Args
@@ -42,6 +43,17 @@ func Test_getFileData(t *testing.T) {
 			}()
 
 			os.Args = tt.osArgs // setting specific command args for this test
+			got, err := getFileData() // running the function we want to test
+
+			if (err != nil) != tt.wantErr { // asserting whether or not the correct value id given
+				t.Errorf("getFileData() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !reflect.DeepEqual(got, tt.want) { // asserting whether the correct value wanted is given
+				t.Errorf("getFileData() = %v, want %v", got, tt.want)
+			}
+
 		}
 	}
 }
