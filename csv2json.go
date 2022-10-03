@@ -43,7 +43,7 @@ func getFileData() (inputFile, error) {
 	fileLocation := flag.Arg(0)
 
 	if !(*separator == "comma" || *separator == "semicolon") {
-		return inputFile{}, errors.New("Only comma or semicolon separators are allowed")
+		return inputFile{}, errors.New("only comma or semicolon separators are allowed")
 	}
 
 	return inputFile{fileLocation, *separator, *pretty}, nil
