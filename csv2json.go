@@ -43,7 +43,7 @@ func getFileData() (inputFile, error) {
 	fileLocation := flag.Arg(0)
 
 	if !(*separator == "comma" || *separator == "semicolon") {
-		return inputFile{}, errors.New("Only comma or semicolon separators are allowed")
+		return inputFile{}, errors.New("only comma or semicolon separators are allowed")
 	}
 
 	return inputFile{fileLocation, *separator, *pretty}, nil
@@ -52,12 +52,12 @@ func getFileData() (inputFile, error) {
 func checkIfValidFile(filename string) (bool, error) {
 	// Check if file is CSV
 	if fileExtension := filepath.Ext(filename); fileExtension != ".csv" {
-		return false, fmt.Errorf("File %s is not CSV", filename)
+		return false, fmt.Errorf("file %s is not CSV", filename)
 	}
 
 	// Check if file does exist
 	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
-		return false, fmt.Errorf("File %s does not exist", filename)
+		return false, fmt.Errorf("file %s does not exist", filename)
 	}
 
 	return true, nil
@@ -65,7 +65,7 @@ func checkIfValidFile(filename string) (bool, error) {
 
 func processLine(headers []string, dataList []string) (map[string]string, error) {
 	if len(dataList) != len(headers) {
-		return nil, errors.New("Line doesn't match headers format. Skipping")
+		return nil, errors.New("line doesn't match headers format. Skipping")
 	}
 
 	recordMap := make(map[string]string)
