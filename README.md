@@ -1,6 +1,6 @@
 # Defining our CSV to JSON app
 
-First, let's define what functionalities and requirements our CLI tool should have:
+Let's define what functionalities and requirements our CLI tool should have:
 
 - This program should take a CSV file path as an argument and generate a JSON file using the same data.
 - The JSON file should contain an array, where each array element represents a row from the input CSV file.
